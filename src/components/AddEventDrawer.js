@@ -3,7 +3,7 @@ import { Drawer, Typography } from '@mui/material'
 import Input from './common/Input'
 import { Box } from '@mui/system'
 import { makeStyles } from '@mui/styles'
-import React from 'react'
+import React, { useEffect } from 'react'
 import Select from './common/Select'
 import ColorPicker from './common/ColorPicker'
 import Button from './common/Button'
@@ -12,6 +12,7 @@ import requests from '../requests'
 import { format } from 'almoment'
 import useForm from '../hooks/useForm'
 import { toast } from 'react-toastify'
+import useFetch from '../hooks/useFetch'
 const useStyles = makeStyles({
   root: {
     '& .MuiPaper-root': {
@@ -28,6 +29,8 @@ const containerTypes = [
   { label: '23', year: 1972 },
 ]
 export default function AddEventDrawer({ open, setOpen }) {
+  const cls = useStyles()
+  const isUpdate = open && typeof open === 'string'
   const { mutate, isLoading } = useRequest(requests.train.create, {
     onSuccess(res) {
       console.log('RES', res)
@@ -35,7 +38,20 @@ export default function AddEventDrawer({ open, setOpen }) {
       setOpen(false)
     },
   })
-  const { register, handleSubmit } = useForm({
+  const { mutate: update, isLoading: isUpdating } = useRequest(
+    requests.train.update,
+    {
+      onSuccess(res) {
+        console.log('RES', res)
+        toast.success('Created successfully!')
+        setOpen(false)
+      },
+    }
+  )
+  const { data, refetch } = useFetch(() => requests.train.getSingle(open), {
+    enabled: isUpdate,
+  })
+  const { register, handleSubmit, reset, setValues } = useForm({
     onSubmit,
     onError,
   })
@@ -50,18 +66,67 @@ export default function AddEventDrawer({ open, setOpen }) {
       import_arrival_date: format(data.import_arrival_date, 'YYYY-MM-DD'),
       export_departure_date: format(data.export_departure_date, 'YYYY-MM-DD'),
       export_arrival_date: format(data.export_arrival_date, 'YYYY-MM-DD'),
-      // number_of_containers: parseInt(data?.number_of_containers),
-      // number_of_wagons: parseInt(data?.number_of_wagons),
+      number_of_containers: `${data?.number_of_containers}`,
+      number_of_wagons: `${data?.number_of_wagons}`,
     }
     console.log('requestBody', requestBody)
+    if (isUpdate) {
+      update(open, requestBody)
+      return
+    }
     mutate(requestBody)
   }
   function onError(data) {
     console.log('onSubmitError', data)
     toast.error('Please, fill in all fields')
   }
-  const cls = useStyles()
 
+  useEffect(() => {
+    if (!open) {
+      reset()
+    }
+    if (isUpdate) {
+      refetch()
+    }
+  }, [open])
+  useEffect(() => {
+    if (data?.data) {
+      const formatted = {
+        id: data?.train_id,
+        name: data?.data?.name,
+        container_type: containerTypes?.find(
+          (el) => el.label === data?.data.container_type
+        ),
+        from_destination: containerTypes?.find(
+          (el) => el.label === data?.data.from_destination
+        ),
+        to_destination: containerTypes?.find(
+          (el) => el.label === data?.data.to_destination
+        ),
+        import_departure_date: format(
+          data?.data?.import_departure_date,
+          'YYYY-MM-DD'
+        ),
+        import_arrival_date: format(
+          data?.data?.import_arrival_date,
+          'YYYY-MM-DD'
+        ),
+        export_departure_date: format(
+          data?.data?.export_departure_date,
+          'YYYY-MM-DD'
+        ),
+        export_arrival_date: format(
+          data?.data?.export_arrival_date,
+          'YYYY-MM-DD'
+        ),
+        number_of_containers: data?.data?.number_of_containers,
+        number_of_wagons: data?.data?.number_of_wagons,
+      }
+      setValues(formatted)
+    }
+    console.log('data', data)
+  }, [data])
+  console.log('data', data)
   return (
     <Drawer
       anchor={'right'}
@@ -75,10 +140,10 @@ export default function AddEventDrawer({ open, setOpen }) {
             sx={{
               fontSize: 24,
               fontWeight: 600,
-              mb: 1,
+              mb: 2,
             }}
           >
-            {open?.id ? 'Update' : 'Add'} event
+            {isUpdate ? 'Update' : 'Add'} event
           </Typography>
           <Box display='flex' flexDirection='column'>
             <Input
@@ -173,10 +238,10 @@ export default function AddEventDrawer({ open, setOpen }) {
               fullWidth
               variant='contained'
               type='submit'
-              isLoading={isLoading}
+              isLoading={isLoading || isUpdating}
               // onClick={() => mutate(values)}
             >
-              {open?.id ? 'Update' : 'Add'}
+              {isUpdate ? 'Update' : 'Add'}
             </Button>
           </Box>
         </Box>

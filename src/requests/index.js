@@ -6,7 +6,7 @@ const train = {
     request.get(`v1/train/destionation${queryStringify(filter)}`),
   getSingle: (id) => request.get(`v1/train/${id}`),
   create: (data) => request.post(`v1/train`, data),
-  update: (id, data) => request.post(`v1/train/${id}`, data),
+  update: (id, data) => request.put(`v1/train/${id}`, data),
 }
 const comment = {
   getReasons: (filter) =>

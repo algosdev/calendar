@@ -11,7 +11,7 @@ import useDeepCompareEffect from '../hooks/useDeepCompareEffect'
 import { format } from 'almoment'
 import { Toolbar } from '@mui/material'
 export default function Calendar() {
-  const { data, isLoading } = useFetch(() =>
+  const { data } = useFetch(() =>
     requests.train.getAll({
       size: 10,
       page: 1,
@@ -69,7 +69,7 @@ export default function Calendar() {
       start: eventInfo.start,
       backgroundColor: eventInfo.backgroundColor,
     }
-    setOpenDrawer(formatted)
+    setOpenDrawer(eventInfo.id)
   }
   useDeepCompareEffect(() => {
     if (data) {
@@ -130,28 +130,34 @@ export default function Calendar() {
               },
             }}
             initialView='dayGridMonth'
-            editable={true}
+            // editable={true}
             selectable={true}
             selectMirror={true}
             dayMaxEvents={true}
             weekends
             events={events}
-            eventStartEditable
-            eventResizableFromStart
-            eventDurationEditable
+            // eventStartEditable
+            // eventResizableFromStart
+            // eventDurationEditable
             droppable={true}
+            // eventRender={(event, element) => {
+            //   element.bind('dblclick', function () {
+            //     alert('double click!')
+            //   })
+            // }}
             eventChange={(e) => handleChange(e.event)}
             eventClick={(e) => handleClick(e.event)}
           />
         </div>
       </div>
-      {openDrawer && (
-        <AddEventDrawer
-          setOpen={setOpenDrawer}
-          open={openDrawer}
-          onSubmit={handleSubmit}
-        />
-      )}
+      {/* {openDrawer && ( */}
+      <AddEventDrawer
+        setOpen={setOpenDrawer}
+        open={openDrawer}
+        onSubmit={handleSubmit}
+      />
+
+      {/* )} */}
     </>
   )
 }

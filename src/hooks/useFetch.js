@@ -35,14 +35,14 @@ const useFetch = (request, options) => {
       })
   }
   useEffect(() => {
-    if (enabled) {
+    if (enabled && request) {
       fetchRequest()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return {
     ...state,
-    refetch: fetch,
+    refetch: fetchRequest,
   }
 }
 export default useFetch

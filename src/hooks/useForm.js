@@ -53,19 +53,44 @@ export default function useForm(options) {
       data: {
         ...old.data,
         [name]: {
+          ...old.data[name],
           value: value,
         },
       },
     }))
   }
+  const reset = () => {
+    setState((old) => {
+      const resettedValues = Object.entries(old.data)?.reduce(
+        (init, [key, properties]) => {
+          init[key] = { ...properties, value: properties.defaultValue }
+          return init
+        },
+        {}
+      )
+      return {
+        ...old,
+        data: resettedValues,
+      }
+    })
+  }
   const setValues = (values) => {
-    setState((old) => ({
-      ...old,
-      data: {
-        ...old.values,
-        ...values,
-      },
-    }))
+    setState((old) => {
+      const entries = Object.entries(old.data)
+      const newValues = entries?.reduce((init, [key, el]) => {
+        init[key] = {
+          ...el,
+          ...(key in values && { value: values?.[key] }),
+        }
+        return init
+      }, {})
+      return {
+        ...old,
+        data: {
+          ...newValues,
+        },
+      }
+    })
   }
   const register = (name, options) => {
     if (!registeredFields.current.includes(name)) {
@@ -77,6 +102,7 @@ export default function useForm(options) {
           [name]: {
             isInteger: Boolean(isInteger),
             value: defaultValue,
+            defaultValue,
             required: Boolean(required),
             validate,
           },
@@ -98,5 +124,6 @@ export default function useForm(options) {
     formState: state.formState,
     setValues,
     setValue,
+    reset,
   }
 }
