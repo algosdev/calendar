@@ -1,12 +1,22 @@
 import React, { useState } from 'react'
 import './styles.css'
-import FullCalendar from '@fullcalendar/react'
+import FullCalendar, { Tooltip } from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import AddEventDrawer from './AddEventDrawer'
-
+import useFetch from '../hooks/useFetch'
+import requests from '../requests'
+import useDeepCompareEffect from '../hooks/useDeepCompareEffect'
+import { format } from 'almoment'
+import { Toolbar } from '@mui/material'
 export default function Calendar() {
+  const { data, isLoading } = useFetch(() =>
+    requests.train.getAll({
+      size: 10,
+      page: 1,
+    })
+  )
   const [openDrawer, setOpenDrawer] = useState(false)
   const [events, setEvents] = useState([])
   const handleSubmit = (data) => {
@@ -34,10 +44,22 @@ export default function Calendar() {
       start: eventInfo.start,
       backgroundColor: eventInfo.backgroundColor,
     }
-      setEvents((state) => {
-        const updatedEvents = state.map((el) => (el.id === formatted.id ? formatted : el))
-        return updatedEvents
-      })
+    setEvents((state) => {
+      const updatedEvents = state.map((el) =>
+        el.id === formatted.id ? formatted : el
+      )
+      return updatedEvents
+    })
+  }
+  function renderEventContent(eventInfo) {
+    return (
+      <>
+        {/* <Toolbar title='Add'> */}
+        <b>{eventInfo.timeText}</b>
+        <i>{eventInfo.event.title}</i>
+        {/* </Toolbar> */}
+      </>
+    )
   }
   const handleClick = (eventInfo) => {
     const formatted = {
@@ -49,14 +71,42 @@ export default function Calendar() {
     }
     setOpenDrawer(formatted)
   }
-  console.log("EVENTS", events)
+  useDeepCompareEffect(() => {
+    if (data) {
+      const formatted = data.data?.trains?.reduce((init, el) => {
+        const formattedImport = {
+          id: el.train_id,
+          type: 'import',
+          title: el.name,
+          end: format(el.import_arrival_date, 'YYYY-MM-DD'),
+          start: format(el.import_departure_date, 'YYYY-MM-DD'),
+          backgroundColor: 'red',
+        }
+        const formattedExport = {
+          id: el.train_id,
+          type: 'import',
+          title: el.name,
+          end: format(el.import_arrival_date, 'YYYY-MM-DD'),
+          start: format(el.import_departure_date, 'YYYY-MM-DD'),
+          backgroundColor: 'green',
+        }
+        init.push(formattedImport)
+        init.push(formattedExport)
+        // const arr = [formattedImport, formattedExport]
+        // init.concat(arr)
+        return init
+      }, [])
+      setEvents(formatted || [])
+    }
+  }, [data])
+  console.log('EVENTS', events)
   return (
     <>
-      <div className='App'>
+      <div>
         <div
           style={{
             float: 'left',
-            width: 'calc(100vw - 64px)',
+            width: 'calc(100vw - 16px)',
             overflow: 'hidden',
             padding: 32,
           }}
@@ -68,14 +118,15 @@ export default function Calendar() {
               center: 'title',
               right: 'dayGridMonth,timeGridWeek,timeGridDay',
             }}
+            eventContent={renderEventContent}
             customButtons={{
               new: {
                 text: 'New event',
                 click: () => setOpenDrawer(true),
               },
               submit: {
-                text: "Submit",
-                click: () => alert(JSON.stringify(events, null,1)),
+                text: 'Submit',
+                click: () => alert(JSON.stringify(events, null, 1)),
               },
             }}
             initialView='dayGridMonth'
@@ -90,18 +141,17 @@ export default function Calendar() {
             eventDurationEditable
             droppable={true}
             eventChange={(e) => handleChange(e.event)}
-            eventClick={(e) =>  handleClick(e.event)}
-            eventAdd={(e) => console.log("ADD",e)}
-            eventReceive={(e) => console.log("ADD",e)}
-            eventDrop={(e) => console.log("ADD",e)}
+            eventClick={(e) => handleClick(e.event)}
           />
         </div>
       </div>
-      <AddEventDrawer
-        setOpen={setOpenDrawer}
-        open={openDrawer}
-        onSubmit={handleSubmit}
-      />
+      {openDrawer && (
+        <AddEventDrawer
+          setOpen={setOpenDrawer}
+          open={openDrawer}
+          onSubmit={handleSubmit}
+        />
+      )}
     </>
   )
 }
