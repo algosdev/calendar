@@ -14,7 +14,7 @@ const comment = {
   getComments: (id, filter) =>
     request.get(`v1/comment/by/${id}${queryStringify(filter)}`),
   create: (data) => request.post(`v1/comment`, data),
-  update: (id, data) => request.post(`v1/comment/${id}`, data),
+  update: (id, data) => request.put(`v1/comment/${id}`, data),
 }
 const requests = {
   train,

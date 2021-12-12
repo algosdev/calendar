@@ -9,3 +9,8 @@
 .fc .fc-new-button {
   background-color: var(--blue) !important;
 }
+.fc .fc-daygrid-event {
+  border: 0;
+  padding: 4px;
+  cursor: pointer;
+}

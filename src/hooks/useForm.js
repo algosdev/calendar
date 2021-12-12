@@ -94,7 +94,12 @@ export default function useForm(options) {
   }
   const register = (name, options) => {
     if (!registeredFields.current.includes(name)) {
-      const { defaultValue = null, required, validate, isInteger } = options
+      const {
+        defaultValue = null,
+        required,
+        validate,
+        isInteger,
+      } = options || {}
       setState((old) => ({
         ...old,
         data: {
@@ -116,6 +121,7 @@ export default function useForm(options) {
       onChange: (value) => {
         setValue(name, value)
       },
+      name,
     }
   }
   return {

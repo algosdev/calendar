@@ -7,7 +7,7 @@ function App() {
   return (
     <div className='App'>
       <Calendar />
-      <ToastContainer />
+      <ToastContainer autoClose={3000} hideProgressBar />
     </div>
   )
 }

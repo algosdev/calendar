@@ -8,12 +8,20 @@ const useFetch = (request, options) => {
     data: null,
     error: null,
   })
-
+  const reset = () => {
+    setState({
+      isLoading: false,
+      isError: false,
+      data: null,
+      error: null,
+    })
+  }
   const fetchRequest = (...args) => {
     setState((old) => ({
       ...old,
       isLoading: true,
     }))
+    console.log(args)
     request(...args)
       .then((res) => {
         setState((old) => ({
@@ -43,6 +51,7 @@ const useFetch = (request, options) => {
   return {
     ...state,
     refetch: fetchRequest,
+    reset
   }
 }
 export default useFetch

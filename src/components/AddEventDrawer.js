@@ -28,23 +28,23 @@ const containerTypes = [
   { label: '45', year: 1994 },
   { label: '23', year: 1972 },
 ]
-export default function AddEventDrawer({ open, setOpen }) {
+export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
   const cls = useStyles()
   const isUpdate = open && typeof open === 'string'
   const { mutate, isLoading } = useRequest(requests.train.create, {
     onSuccess(res) {
-      console.log('RES', res)
       toast.success('Created successfully!')
       setOpen(false)
+      afterSubmit()
     },
   })
   const { mutate: update, isLoading: isUpdating } = useRequest(
     requests.train.update,
     {
       onSuccess(res) {
-        console.log('RES', res)
-        toast.success('Created successfully!')
+        toast.success('Updated successfully!')
         setOpen(false)
+        afterSubmit()
       },
     }
   )
@@ -56,7 +56,6 @@ export default function AddEventDrawer({ open, setOpen }) {
     onError,
   })
   function onSubmit(data) {
-    console.log('onSubmit', data)
     const requestBody = {
       ...data,
       container_type: data.container_type.label,
@@ -77,7 +76,6 @@ export default function AddEventDrawer({ open, setOpen }) {
     mutate(requestBody)
   }
   function onError(data) {
-    console.log('onSubmitError', data)
     toast.error('Please, fill in all fields')
   }
 
@@ -97,10 +95,10 @@ export default function AddEventDrawer({ open, setOpen }) {
         container_type: containerTypes?.find(
           (el) => el.label === data?.data.container_type
         ),
-        from_destination: containerTypes?.find(
+        from_destination: destinations?.find(
           (el) => el.label === data?.data.from_destination
         ),
-        to_destination: containerTypes?.find(
+        to_destination: destinations?.find(
           (el) => el.label === data?.data.to_destination
         ),
         import_departure_date: format(
@@ -124,9 +122,7 @@ export default function AddEventDrawer({ open, setOpen }) {
       }
       setValues(formatted)
     }
-    console.log('data', data)
   }, [data])
-  console.log('data', data)
   return (
     <Drawer
       anchor={'right'}
