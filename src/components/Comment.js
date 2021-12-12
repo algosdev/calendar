@@ -13,7 +13,7 @@ export default function Comment({ data, trains,onEdit }) {
       <Typography>Date: <b>{format(data?.issue_date, 'YYYY.MM.DD')}</b></Typography>
       <Typography>Message: <b>{data.message}</b></Typography>
      </Box>
-     <Button onClick={() =>onEdit(data)}>Edit</Button>
+     <Button variant='contained' onClick={() =>onEdit(data)}>Edit</Button>
     </Box>
   )
 }

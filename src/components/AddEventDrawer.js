@@ -13,6 +13,8 @@ import { format } from 'almoment'
 import useForm from '../hooks/useForm'
 import { toast } from 'react-toastify'
 import useFetch from '../hooks/useFetch'
+import AddCommentForm from './AddCommentForm'
+import Comment from './Comment'
 const useStyles = makeStyles({
   root: {
     '& .MuiPaper-root': {
@@ -38,6 +40,12 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
       afterSubmit()
     },
   })
+  const {
+    data: comments,
+    refetch: refetchComments,
+    reset: resetData,
+  } = useFetch((...args) => requests.comment.getComments(...args))
+  const { data: trains } = useFetch(() => requests.train.getAll())
   const { mutate: update, isLoading: isUpdating } = useRequest(
     requests.train.update,
     {
@@ -83,10 +91,19 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
     if (!open) {
       reset()
     }
+    if (open && ![true, false].includes(open)) {
+      setValues({
+        import_departure_date: open,
+        export_departure_date: open,
+      })
+    }
     if (isUpdate) {
       refetch()
     }
   }, [open])
+  useEffect(() => {
+    if (data?.data) refetchComments(data?.data?.train_id)
+  }, [data])
   useEffect(() => {
     if (data?.data) {
       const formatted = {
@@ -139,7 +156,7 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
               mb: 2,
             }}
           >
-            {isUpdate ? 'Update' : 'Add'} event
+            {isUpdate ? 'Update' : 'Add'} train
           </Typography>
           <Box display='flex' flexDirection='column'>
             <Input
@@ -242,6 +259,23 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
           </Box>
         </Box>
       </form>
+      <AddCommentForm trainId={data?.data?.train_id} />
+      <Box px={4} mb={4}>
+        <hr style={{ margin: '24px 0' }} />
+        {comments?.data?.comments?.length
+          ? data?.data?.comments?.map((el, key) => (
+              <Comment
+                onEdit={(e) => {
+                  // onEdit(e)
+                  setOpen(false)
+                }}
+                key={key}
+                data={el}
+                trains={trains?.data?.trains}
+              />
+            ))
+          : 'No comment'}
+      </Box>
     </Drawer>
   )
 }

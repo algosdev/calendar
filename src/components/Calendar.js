@@ -95,14 +95,14 @@ export default function Calendar() {
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             headerToolbar={{
-              left: 'prev,next today new new_comment see_all_comments',
+              left: 'prev,next new',
               center: 'title',
               right: 'dayGridMonth,timeGridWeek,timeGridDay',
             }}
             eventContent={renderEventContent}
             customButtons={{
               new: {
-                text: 'New event',
+                text: 'New train',
                 click: () => setOpenDrawer(true),
               },
               new_comment: {
@@ -133,8 +133,9 @@ export default function Calendar() {
             // }}
             dateClick={(e) => {
               // setAnchorEl(e.dayEl)
+              setOpenDrawer(e.date)
               currentDate.current = e.date
-              setOpenCommentDrawer(true)
+              // setOpenCommentDrawer(true)
             }}
             // eventChange={(e) => handleChange(e.event)}
             eventClick={(e) => {

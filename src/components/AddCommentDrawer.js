@@ -13,6 +13,7 @@ import { format } from 'almoment'
 import useForm from '../hooks/useForm'
 import { toast } from 'react-toastify'
 import useFetch from '../hooks/useFetch'
+import AddCommentForm from './AddCommentForm'
 const useStyles = makeStyles({
   root: {
     '& .MuiPaper-root': {
@@ -166,6 +167,7 @@ export default function AddCommentDrawer({ open, setOpen, afterSubmit, currentDa
           </Box>
         </Box>
       </form>
+   
     </Drawer>
   )
 }
