@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import './styles.css'
-import FullCalendar, { Tooltip } from '@fullcalendar/react'
+import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -9,11 +9,14 @@ import useFetch from '../hooks/useFetch'
 import requests from '../requests'
 import useDeepCompareEffect from '../hooks/useDeepCompareEffect'
 import { format } from 'almoment'
-import { Toolbar } from '@mui/material'
+import { Typography } from '@mui/material'
 import Button from './common/Button'
 import Popper from './common/Popper'
 import AddCommentDrawer from './AddCommentDrawer'
 import CommentsDrawer from './CommentsDrawer'
+import CommentIcon from '../icons/CommentIcon'
+import { toast } from 'react-toastify'
+import useRequest from '../hooks/useRequest'
 export default function Calendar() {
   const { data, refetch } = useFetch(() =>
     requests.train.getAll({
@@ -30,29 +33,49 @@ export default function Calendar() {
   const handleSubmit = () => {
     refetch()
   }
-  //   const hybridClick = useDoubleClick(
-  //     () => setDoubleClickCount(doubleClickCount + 1),
-  //     () => setClickCount(clickCount + 1),
-  // );
+  const { mutate: update } = useRequest(requests.train.update, {
+    onSuccess(res) {
+      toast.success('Updated successfully!')
+      refetch()
+    },
+  })
   function renderEventContent(eventInfo) {
     return (
       <>
-        {/* <Toolbar title={
-          <Button>H</Button>
-        }
-        style={{
-          minHeight: 16
-        }}> */}
-        {/* <Popper> */}
-        <b>{eventInfo.timeText}</b>
-        <i>{eventInfo.event.title}</i>
-        {/* </Popper> */}
-        {/* </Toolbar> */}
+        <Typography sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <b>{eventInfo.event.title}</b>
+          <i>
+            {eventInfo.event.extendedProps.comment_count}
+            <CommentIcon style={{ marginLeft: 4 }} />
+          </i>
+        </Typography>
       </>
     )
   }
   const handleClick = (eventInfo) => {
     setOpenDrawer(eventInfo.id)
+  }
+  const handleChange = (eventInfo) => {
+    requests.train.getSingle(eventInfo.id)?.then((res) => {
+      const {
+        start,
+        end,
+        extendedProps: { type },
+      } = eventInfo
+      const requestBody = {
+        ...res.data,
+        ...(type === 'import' && {
+          import_arrival_date: format(end, 'YYYY-MM-DD'),
+          import_departure_date: format(start, 'YYYY-MM-DD'),
+        }),
+        ...(type === 'export' && {
+          export_arrival_date: format(end, 'YYYY-MM-DD'),
+          export_departure_date: format(start, 'YYYY-MM-DD'),
+        }),
+      }
+      console.log('requestBody', requestBody)
+      update(eventInfo.id, requestBody)
+    })
   }
   useDeepCompareEffect(() => {
     if (data) {
@@ -63,15 +86,17 @@ export default function Calendar() {
           title: el.name,
           end: format(el.import_arrival_date, 'YYYY-MM-DD'),
           start: format(el.import_departure_date, 'YYYY-MM-DD'),
-          backgroundColor: '#ef476f',
+          comment_count: el?.comment_count,
+          backgroundColor: el?.import_color || '#ef476f',
         }
         const formattedExport = {
           id: el.train_id,
-          type: 'import',
+          type: 'export',
           title: el.name,
           end: format(el.import_arrival_date, 'YYYY-MM-DD'),
           start: format(el.import_departure_date, 'YYYY-MM-DD'),
-          backgroundColor: '#118ab2',
+          comment_count: el?.comment_count,
+          backgroundColor: el?.export_color || '#118ab2',
         }
         init.push(formattedImport)
         init.push(formattedExport)
@@ -95,14 +120,14 @@ export default function Calendar() {
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             headerToolbar={{
-              left: 'prev,next today new new_comment see_all_comments',
+              left: 'prev,next new',
               center: 'title',
               right: 'dayGridMonth,timeGridWeek,timeGridDay',
             }}
             eventContent={renderEventContent}
             customButtons={{
               new: {
-                text: 'New event',
+                text: 'New train',
                 click: () => setOpenDrawer(true),
               },
               new_comment: {
@@ -113,10 +138,9 @@ export default function Calendar() {
                 text: 'All comments',
                 click: () => setOpenComments(true),
               },
-              
             }}
             initialView='dayGridMonth'
-            // editable={true}
+            editable={true}
             selectable={true}
             selectMirror={true}
             dayMaxEvents={true}
@@ -124,8 +148,8 @@ export default function Calendar() {
             events={events}
             // eventStartEditable
             // eventResizableFromStart
-            // eventDurationEditable
-            droppable={true}
+            eventDurationEditable
+            // droppable={true}
             // eventRender={(event, element) => {
             //   element.bind('dblclick', function () {
             //     alert('double click!')
@@ -133,10 +157,11 @@ export default function Calendar() {
             // }}
             dateClick={(e) => {
               // setAnchorEl(e.dayEl)
+              setOpenDrawer(e.date)
               currentDate.current = e.date
-              setOpenCommentDrawer(true)
+              // setOpenCommentDrawer(true)
             }}
-            // eventChange={(e) => handleChange(e.event)}
+            eventChange={(e) => handleChange(e.event)}
             eventClick={(e) => {
               handleClick(e.event)
             }}
@@ -154,12 +179,13 @@ export default function Calendar() {
         afterSubmit={handleSubmit}
         currentDate={currentDate.current}
       />
-      <CommentsDrawer setOpen={setOpenComments}
+      <CommentsDrawer
+        setOpen={setOpenComments}
         open={openComents}
         afterSubmit={handleSubmit}
         onEdit={(id) => setOpenCommentDrawer(id)}
         currentDate={currentDate.current}
-        />
+      />
       <Popper anchorEl={anchorEl}>
         <Button
           variant='contained'
@@ -179,7 +205,7 @@ export default function Calendar() {
             setAnchorEl(null)
             setOpenComments(true)
           }}
-          sx={{ cursor: 'pointer', ml:1 }}
+          sx={{ cursor: 'pointer', ml: 1 }}
         >
           See comments
         </Button>

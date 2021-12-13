@@ -8,5 +8,5 @@ export default function queryStringify(obj, options = {}) {
     str += query
     return str
   }, '')
-  return `${addQueryPrefix ? '?' : ''}${result}`
+  return `${addQueryPrefix && result ? '?' : ''}${result}`
 }

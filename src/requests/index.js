@@ -3,7 +3,7 @@ import request from './axios'
 const train = {
   getAll: (filter) => request.get(`v1/train${queryStringify(filter)}`),
   getDestinations: (filter) =>
-    request.get(`v1/train/destionation${queryStringify(filter)}`),
+    request.get(`v1/train/destination${queryStringify(filter)}`),
   getSingle: (id) => request.get(`v1/train/${id}`),
   create: (data) => request.post(`v1/train`, data),
   update: (id, data) => request.put(`v1/train/${id}`, data),
