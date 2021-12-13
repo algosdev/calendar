@@ -14,7 +14,8 @@ import useForm from '../hooks/useForm'
 import { toast } from 'react-toastify'
 import useFetch from '../hooks/useFetch'
 import AddCommentForm from './AddCommentForm'
-import Comment from './Comment'
+import CommentList from './CommentList'
+import useDeepCompareEffect from '../hooks/useDeepCompareEffect'
 const useStyles = makeStyles({
   root: {
     '& .MuiPaper-root': {
@@ -22,30 +23,33 @@ const useStyles = makeStyles({
     },
   },
 })
-const destinations = [
-  { label: 'Namangan', year: 1994 },
-  { label: 'Jizzakh', year: 1972 },
-]
-const containerTypes = [
-  { label: '45', year: 1994 },
-  { label: '23', year: 1972 },
-]
+
 export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
   const cls = useStyles()
   const isUpdate = open && typeof open === 'string'
+  const { data: comments, refetch: refetchComments } = useFetch(
+    (id, filter) => id && requests.comment.getComments(id, filter),
+    { enabled: isUpdate }
+  )
+  const { data: trains } = useFetch(() => requests.train.getAll())
+  const { data: trainSingle, refetch } = useFetch(
+    () => requests.train.getSingle(open),
+    {
+      enabled: isUpdate,
+    }
+  )
+  const { data: destinations } = useFetch(() =>
+    requests.train.getDestinations({
+      size: 100,
+    })
+  )
   const { mutate, isLoading } = useRequest(requests.train.create, {
-    onSuccess(res) {
+    onSuccess() {
       toast.success('Created successfully!')
       setOpen(false)
       afterSubmit()
     },
   })
-  const {
-    data: comments,
-    refetch: refetchComments,
-    reset: resetData,
-  } = useFetch((...args) => requests.comment.getComments(...args))
-  const { data: trains } = useFetch(() => requests.train.getAll())
   const { mutate: update, isLoading: isUpdating } = useRequest(
     requests.train.update,
     {
@@ -56,9 +60,6 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
       },
     }
   )
-  const { data, refetch } = useFetch(() => requests.train.getSingle(open), {
-    enabled: isUpdate,
-  })
   const { register, handleSubmit, reset, setValues } = useForm({
     onSubmit,
     onError,
@@ -66,7 +67,6 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
   function onSubmit(data) {
     const requestBody = {
       ...data,
-      container_type: data.container_type.label,
       from_destination: data?.from_destination.label,
       to_destination: data?.to_destination.label,
       import_departure_date: format(data.import_departure_date, 'YYYY-MM-DD'),
@@ -102,44 +102,47 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
     }
   }, [open])
   useEffect(() => {
-    if (data?.data) refetchComments(data?.data?.train_id)
-  }, [data])
-  useEffect(() => {
-    if (data?.data) {
+    if (trainSingle?.data?.train_id) {
+      refetchComments(trainSingle?.data?.train_id)
+    }
+  }, [trainSingle])
+  useDeepCompareEffect(() => {
+    if (trainSingle?.data) {
+      const destFrom = destinations?.data?.destinations?.find(
+        (el) => el.name === trainSingle?.data.from_destination
+      )
+      const destTo = destinations?.data?.destinations?.find(
+        (el) => el.name === trainSingle?.data.to_destination
+      )
       const formatted = {
-        id: data?.train_id,
-        name: data?.data?.name,
-        container_type: containerTypes?.find(
-          (el) => el.label === data?.data.container_type
-        ),
-        from_destination: destinations?.find(
-          (el) => el.label === data?.data.from_destination
-        ),
-        to_destination: destinations?.find(
-          (el) => el.label === data?.data.to_destination
-        ),
+        id: trainSingle?.train_id,
+        name: trainSingle?.data?.name,
+        from_destination: destFrom && { ...destFrom, label: destFrom?.name },
+        to_destination: destTo && { ...destTo, label: destTo?.name },
         import_departure_date: format(
-          data?.data?.import_departure_date,
+          trainSingle?.data?.import_departure_date,
           'YYYY-MM-DD'
         ),
         import_arrival_date: format(
-          data?.data?.import_arrival_date,
+          trainSingle?.data?.import_arrival_date,
           'YYYY-MM-DD'
         ),
         export_departure_date: format(
-          data?.data?.export_departure_date,
+          trainSingle?.data?.export_departure_date,
           'YYYY-MM-DD'
         ),
         export_arrival_date: format(
-          data?.data?.export_arrival_date,
+          trainSingle?.data?.export_arrival_date,
           'YYYY-MM-DD'
         ),
-        number_of_containers: data?.data?.number_of_containers,
-        number_of_wagons: data?.data?.number_of_wagons,
+        export_color: trainSingle?.data?.export_color,
+        import_color: trainSingle?.data?.import_color,
+        number_of_containers: trainSingle?.data?.number_of_containers,
+        number_of_wagons: trainSingle?.data?.number_of_wagons,
       }
       setValues(formatted)
     }
-  }, [data])
+  }, [trainSingle, destinations])
   return (
     <Drawer
       anchor={'right'}
@@ -162,14 +165,6 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
             <Input
               label='Name'
               {...register('name', {
-                defaultValue: '',
-                required: true,
-              })}
-            />
-            <Select
-              label='Container type'
-              options={containerTypes}
-              {...register('container_type', {
                 defaultValue: '',
                 required: true,
               })}
@@ -206,14 +201,20 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
             </Box>
             <Select
               label='Destination from'
-              options={destinations}
+              options={destinations?.data?.destinations?.map((el) => ({
+                ...el,
+                label: el.name,
+              }))}
               {...register('from_destination', {
                 required: true,
               })}
             />
             <Select
               label='Destination to'
-              options={destinations}
+              options={destinations?.data?.destinations?.map((el) => ({
+                ...el,
+                label: el.name,
+              }))}
               {...register('to_destination', {
                 required: true,
               })}
@@ -240,42 +241,51 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
               />
             </Box>
           </Box>
-          {/* <ColorPicker
-          onChange={(val) => {
-            setValues({ ...values, backgroundColor: val })
-          }}
-          value={values.backgroundColor}
-        /> */}
+          <ColorPicker
+            label={'Import color'}
+            {...register('import_color', {
+              required: true,
+            })}
+          />
+          <ColorPicker
+            label={'Export color'}
+            {...register('export_color', {
+              required: true,
+            })}
+          />
           <Box mt={2}>
             <Button
               fullWidth
               variant='contained'
               type='submit'
               isLoading={isLoading || isUpdating}
-              // onClick={() => mutate(values)}
             >
-              {isUpdate ? 'Update' : 'Add'}
+              {isUpdate ? 'Update' : 'Add'} train
             </Button>
           </Box>
         </Box>
       </form>
-      <AddCommentForm trainId={data?.data?.train_id} />
-      <Box px={4} mb={4}>
-        <hr style={{ margin: '24px 0' }} />
-        {comments?.data?.comments?.length
-          ? data?.data?.comments?.map((el, key) => (
-              <Comment
-                onEdit={(e) => {
-                  // onEdit(e)
-                  setOpen(false)
-                }}
-                key={key}
-                data={el}
-                trains={trains?.data?.trains}
-              />
-            ))
-          : 'No comment'}
-      </Box>
+      {isUpdate && open ? (
+        <>
+          <AddCommentForm
+            trainId={trainSingle?.data?.train_id}
+            afterSubmit={() => refetchComments(trainSingle?.data?.train_id)}
+          />
+          <Box px={4} mb={4}>
+            <hr style={{ margin: '24px 0' }} />
+            <CommentList
+              comments={comments}
+              trains={trains}
+              afterSubmit={() => {
+                afterSubmit()
+                refetchComments(trainSingle?.data?.train_id)
+              }}
+            />
+          </Box>
+        </>
+      ) : (
+        ''
+      )}
     </Drawer>
   )
 }
