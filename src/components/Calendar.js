@@ -17,6 +17,7 @@ import CommentsDrawer from './CommentsDrawer'
 import CommentIcon from '../icons/CommentIcon'
 import { toast } from 'react-toastify'
 import useRequest from '../hooks/useRequest'
+import moment from 'moment'
 export default function Calendar() {
   const { data, refetch } = useFetch(() =>
     requests.train.getAll({
@@ -86,7 +87,10 @@ export default function Calendar() {
           id: el.train_id,
           type: 'import',
           title: el.name,
-          end: format(el.import_arrival_date, 'YYYY-MM-DD'),
+          // end: format(el.import_arrival_date, 'YYYY-MM-DD'),
+          end: moment(el.import_arrival_date, 'YYYY-MM-DD')
+            .add(1, 'days')
+            .format('YYYY-MM-DD'),
           start: format(el.import_departure_date, 'YYYY-MM-DD'),
           comment_count: el?.comment_count,
           backgroundColor: el?.import_color || '#ef476f',
@@ -95,7 +99,10 @@ export default function Calendar() {
           id: el.train_id,
           type: 'export',
           title: el.name,
-          end: format(el.export_arrival_date, 'YYYY-MM-DD'),
+          // end: format(el.export_arrival_date, 'YYYY-MM-DD'),
+          end: moment(el.export_arrival_date, 'YYYY-MM-DD')
+            .add(1, 'days')
+            .format('YYYY-MM-DD'),
           start: format(el.export_departure_date, 'YYYY-MM-DD'),
           comment_count: el?.comment_count,
           backgroundColor: el?.export_color || '#118ab2',
