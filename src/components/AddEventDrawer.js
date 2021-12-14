@@ -244,13 +244,13 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit, type }) {
           <ColorPicker
             label={'Import color'}
             {...register('import_color', {
-              required: true,
+              required: false,
             })}
           />
           <ColorPicker
             label={'Export color'}
             {...register('export_color', {
-              required: true,
+              required: false,
             })}
           />
           <Box mt={2}>
