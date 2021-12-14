@@ -1,7 +1,8 @@
+import { Typography } from '@mui/material'
 import { Box } from '@mui/system'
 import { useState } from 'react'
 const palette = ['#ef476f', '#ffd166', '#06d6a0', '#118ab2', '#073b4c']
-export default function ColorPicker({ value, onChange }) {
+export default function ColorPicker({ value, onChange, name, label }) {
   const [selected, setSelected] = useState()
   return (
     <Box
@@ -11,6 +12,7 @@ export default function ColorPicker({ value, onChange }) {
         marginTop: '16px',
       }}
     >
+      <Typography sx={{ mr: 1 }}>{label}</Typography>
       {palette.map((el, index) => (
         <Box
           key={index}

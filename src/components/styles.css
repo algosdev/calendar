@@ -2,13 +2,42 @@
   --pink: #ef476f;
   --orange: #ffd166;
   --green: #06d6a0;
-  --blue: #118ab2;
+  --blue: #0170fe;
   --midnight-green: #073b4c;
+}
+* {
+  font-family: sans-serif;
+}
+.fc .fc-button-primary {
+  background-color: white !important;
+  color: #000 !important;
+}
+
+.fc .fc-button-primary {
+  border-color: transparent !important;
+}
+.fc .fc-button-primary:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+.fc .fc-button-primary:focus {
+  box-shadow: none !important;
+}
+.fc .fc-button-group > .fc-button:hover:not(.fc-button-active) {
+  z-index: 0 !important;
+}
+.fc .fc-button-group > .fc-button.fc-button-active {
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
 }
 
 .fc .fc-new-button {
   background-color: var(--blue) !important;
+  color: white !important;
 }
+.fc .fc-new-button:hover {
+  background-color: var(--blue) !important;
+  color: white !important;
+}
+
 .fc .fc-daygrid-event {
   border: 0;
   padding: 4px;

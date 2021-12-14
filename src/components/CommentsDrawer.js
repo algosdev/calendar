@@ -59,9 +59,7 @@ export default function CommentsDrawer({ open, setOpen, onEdit,currentDate }) {
     else {
       setValue("issue_date", currentDate)
     }
-    if (isUpdate) {
-      refetch()
-    }
+   
   }, [open])
   console.log('data', data)
   return (
