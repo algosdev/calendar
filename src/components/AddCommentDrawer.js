@@ -120,15 +120,6 @@ export default function AddCommentDrawer({
                 required: true,
               })}
             />
-            <Box mt={2} display='flex'>
-              <DatePicker
-                label='Issue date'
-                {...register('issue_date', {
-                  required: true,
-                  defaultValue: currentDate,
-                })}
-              />
-            </Box>
             <Box mt={1}>
               <Input
                 label='Message'
@@ -140,6 +131,15 @@ export default function AddCommentDrawer({
                 {...register('message', {
                   defaultValue: '',
                   required: true,
+                })}
+              />
+            </Box>
+            <Box mt={2} display='flex'>
+              <DatePicker
+                label='Issue date'
+                {...register('issue_date', {
+                  required: true,
+                  defaultValue: currentDate,
                 })}
               />
             </Box>
