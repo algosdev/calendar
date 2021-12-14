@@ -28,6 +28,7 @@ export default function Calendar() {
   const [openCommentDrawer, setOpenCommentDrawer] = useState(false)
   const [openComents, setOpenComments] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
+  const [type, setType] = useState(null)
   const [events, setEvents] = useState([])
   const currentDate = useRef()
   const handleSubmit = () => {
@@ -54,6 +55,7 @@ export default function Calendar() {
   }
   const handleClick = (eventInfo) => {
     setOpenDrawer(eventInfo.id)
+    setType(eventInfo?.extendedProps?.type)
   }
   const handleChange = (eventInfo) => {
     requests.train.getSingle(eventInfo.id)?.then((res) => {
@@ -93,8 +95,8 @@ export default function Calendar() {
           id: el.train_id,
           type: 'export',
           title: el.name,
-          end: format(el.import_arrival_date, 'YYYY-MM-DD'),
-          start: format(el.import_departure_date, 'YYYY-MM-DD'),
+          end: format(el.export_arrival_date, 'YYYY-MM-DD'),
+          start: format(el.export_departure_date, 'YYYY-MM-DD'),
           comment_count: el?.comment_count,
           backgroundColor: el?.export_color || '#118ab2',
         }
@@ -172,6 +174,7 @@ export default function Calendar() {
         setOpen={setOpenDrawer}
         open={openDrawer}
         afterSubmit={handleSubmit}
+        type={type}
       />
       <AddCommentDrawer
         setOpen={setOpenCommentDrawer}

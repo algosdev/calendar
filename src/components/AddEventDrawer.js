@@ -24,7 +24,7 @@ const useStyles = makeStyles({
   },
 })
 
-export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
+export default function AddEventDrawer({ open, setOpen, afterSubmit, type }) {
   const cls = useStyles()
   const isUpdate = open && typeof open === 'string'
   const { data: comments, refetch: refetchComments } = useFetch(
@@ -159,7 +159,7 @@ export default function AddEventDrawer({ open, setOpen, afterSubmit }) {
               mb: 2,
             }}
           >
-            {isUpdate ? 'Update' : 'Add'} train
+            {isUpdate ? 'Update' : 'Add'} train {type ? `(${type})` : ''}
           </Typography>
           <Box display='flex' flexDirection='column'>
             <Input
