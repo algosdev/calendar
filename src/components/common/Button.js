@@ -6,11 +6,18 @@ const useStyles = makeStyles({
     background: '#0170fe',
   },
 })
-export default function Button({ children, isLoading, sx, ...rest }) {
+export default function Button({
+  children,
+  isLoading,
+  sx,
+  variant = 'contained',
+  ...rest
+}) {
   const cls = useStyles()
   return (
     <MuiButton
       {...rest}
+      variant={variant}
       sx={{
         height: 48,
         background: '#0170fe',

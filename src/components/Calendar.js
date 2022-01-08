@@ -14,9 +14,9 @@ import Button from './common/Button'
 import Popper from './common/Popper'
 import AddCommentDrawer from './AddCommentDrawer'
 import CommentsDrawer from './CommentsDrawer'
-import CommentIcon from '../icons/CommentIcon'
 import { toast } from 'react-toastify'
 import useRequest from '../hooks/useRequest'
+import Icon from '../icons'
 import moment from 'moment'
 export default function Calendar() {
   const { data, refetch } = useFetch(() =>
@@ -48,7 +48,7 @@ export default function Calendar() {
           <b>{eventInfo.event.title}</b>
           <i>
             {eventInfo.event.extendedProps.comment_count}
-            <CommentIcon style={{ marginLeft: 4 }} />
+            <Icon name='comment' style={{ marginLeft: 4 }} />
           </i>
         </Typography>
       </>

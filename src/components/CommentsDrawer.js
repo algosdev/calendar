@@ -1,16 +1,14 @@
 import DatePicker from './common/DatePicker'
 import { Drawer, Typography } from '@mui/material'
-import Input from './common/Input'
 import { Box } from '@mui/system'
 import { makeStyles } from '@mui/styles'
 import React, { useEffect } from 'react'
 import Select from './common/Select'
-import ColorPicker from './common/ColorPicker'
 import Button from './common/Button'
-import useRequest from '../hooks/useRequest'
 import requests from '../requests'
 import { format } from 'almoment'
 import useForm from '../hooks/useForm'
+
 import { toast } from 'react-toastify'
 import useFetch from '../hooks/useFetch'
 import Comment from './Comment'
@@ -25,17 +23,15 @@ const destinations = [
   { label: 'Namangan', year: 1994 },
   { label: 'Jizzakh', year: 1972 },
 ]
-const containerTypes = [
-  { label: '45', year: 1994 },
-  { label: '23', year: 1972 },
-]
-export default function CommentsDrawer({ open, setOpen, onEdit,currentDate }) {
+export default function CommentsDrawer({ open, setOpen, onEdit, currentDate }) {
   const cls = useStyles()
-  const isUpdate = open && typeof open === 'string'
   const { data: trains } = useFetch(() => requests.train.getAll())
-  const { data, refetch, isLoading, reset: resetData } = useFetch((...args) =>
-    requests.comment.getComments(...args)
-  )
+  const {
+    data,
+    refetch,
+    isLoading,
+    reset: resetData,
+  } = useFetch((...args) => requests.comment.getComments(...args))
   const { register, handleSubmit, reset, setValue } = useForm({
     onSubmit,
     onError,
@@ -55,11 +51,9 @@ export default function CommentsDrawer({ open, setOpen, onEdit,currentDate }) {
     if (!open) {
       reset()
       resetData()
+    } else {
+      setValue('issue_date', currentDate)
     }
-    else {
-      setValue("issue_date", currentDate)
-    }
-   
   }, [open])
   console.log('data', data)
   return (
@@ -128,12 +122,26 @@ export default function CommentsDrawer({ open, setOpen, onEdit,currentDate }) {
             </Button>
           </Box>
           <hr style={{ margin: '24px 0' }} />
-          {data?.data?.comments?.length ? data?.data?.comments?.map((el, key) => (
-            <Comment onEdit={(e) =>{
-              onEdit(e)
-              setOpen(false)
-            }} key={key} data={el} trains={trains?.data?.trains} />
-          )): "No comment"}
+          {data?.data?.comments?.length
+            ? data?.data?.comments?.map((el, key) => (
+                <Comment
+                  onEdit={(e) => {
+                    onEdit(e)
+                    setOpen(false)
+                  }}
+                  key={key}
+                  data={el}
+                  trains={trains?.data?.trains}
+                />
+              ))
+            : 'No comment'}
+          {/* <DataGrid
+        rows={rows}
+        columns={columns}
+        pageSize={5}
+        rowsPerPageOptions={[5]}
+        checkboxSelection
+      /> */}
         </Box>
       </form>
     </Drawer>

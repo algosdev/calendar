@@ -32,23 +32,7 @@ export default function DatePicker({ placeholder, sx, ...props }) {
   const cls = useStyles()
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} locale={localeMap.ru}>
-        {/* <MobileDatePicker
-          label="Date mobile"
-          inputFormat="dd/MM/yyyy"
-          renderInput={(props) => (
-            <TextField
-              {...props}
-              sx={{
-                width: '100%',
-                ...sx,
-              }}
-              placeholder={placeholder}
-            />
-          )}
-          {...props}
-        /> */}
       <MuiDatePicker
-      for
         renderInput={(props) => (
          <TextField
             {...props}
